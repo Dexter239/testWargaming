@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block title %}
+        <title>Choose file</title>
+    {% endblock %}
+</head>
+<script>
+    function sendFile(e) {
+        var formData = new FormData();
+        formData.append("file", e.files[0]);
+        formData.append("csrfmiddlewaretoken", '{{ csrf_token }}')
+        $.ajax({
+                url: 'getinfo/',
+                type: 'post',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                beforeSend: function () {
+                    $('#answer').text('Loading...')
+                },
+                success: function (data) {
+                    $('#answer').text('')
+                    if (data['er'] === 1) {
+                        $('#answer').text('Ошибка! Файл не удалось загрузить.')
+                    } else if (data['er'] === 0) {
+                        $('#answer').append('<table border="1" id="tab_ans"><tr><td>Word</td><td>TF</td></tr></table>');
+                        $.each(data['words'], function (k, v) {
+                            $('#tab_ans').append('<tr><td>' + k + '</td> <td>' + v + '</td></tr>');
+                        })
+
+
+                    }
+
+                }
+            }
+        );
+    }
+</script>
+<body>
+<div style="display: flex">
+    {% block file %}
+        <div style="width: 30%">
+            {% csrf_token %}
+            <input onchange="sendFile(this)" type="file" accept="text/plain">
+        </div>
+    {% endblock %}
+    {% block info %}
+        <div style="width: 70%">
+            <div id="answer">
+
+            </div>
+        </div>
+    {% endblock %}
+</div>
+</body>
+</html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
